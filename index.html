@@ -4,12 +4,6 @@
 <meta charset="UTF-8">
 <title>IRON FIST X</title>
 <link rel="stylesheet" href="css/style.css">
-
-<script>
-  window.SUPABASE_URL = 'https://aladxmqxvxlaizqstpea.supabase.co';
-  window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsYWR4bXF4dnhsYWl6cXN0cGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODg3NjUsImV4cCI6MjA4ODk2NDc2NX0.YGBPtfTs4-3A8sEdF43WmbYTpwpQdND6aHZ8qSon4LU';
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div id="wrap">
@@ -33,7 +27,6 @@
       <div class="pips">
         <div class="pip" id="pp1a"></div>
         <div class="pip" id="pp1b"></div>
-        <div class="pip" id="pp1c"></div>
       </div>
     </div>
 
@@ -59,6 +52,7 @@
       <button class="tbtn" onclick="goSoloMenu()">▶ SOLO</button>
       <button class="tbtn" onclick="goOnlineMenu()">🌐 ONLINE</button>
       <button class="tbtn outline" onclick="openRankingModal()">🏆 RANKING</button>
+      <button class="tbtn outline" onclick="openHelpModal()">📖 HOW TO PLAY</button>
     </div>
 
     <div class="thint">
@@ -127,7 +121,6 @@
     <div class="rstats" id="rst"></div>
     <div class="rbtns">
       <button class="rbtn" onclick="rematch()">▶ REMATCH</button>
-      <button class="rbtn s" onclick="openRankingModal()">RANKING</button>
       <button class="rbtn s" onclick="goTitle()">TITLE</button>
     </div>
   </div>
@@ -148,6 +141,46 @@
     </div>
   </div>
 
+  <div id="help-modal">
+    <div class="help-card">
+      <div class="modal-title">📖 HOW TO PLAY</div>
+      <div class="help-body">
+        <section class="help-section">
+          <h3>ゲーム概要</h3>
+          <p>IRON FIST X は 1対1 の対戦格闘ゲームです。先に 3ラウンド取ったプレイヤーが試合に勝利します。</p>
+        </section>
+
+        <section class="help-section">
+          <h3>基本操作</h3>
+          <p><strong>P1操作</strong><br>A / D: 左右移動<br>W: ジャンプ<br>F: 弱攻撃<br>G: 強攻撃<br>H: ガード<br>R: 波動拳<br>T: 昇龍拳<br>F + G: CA必殺</p>
+          <p><strong>P2</strong><br>CPU戦またはオンライン対戦相手です。</p>
+        </section>
+
+        <section class="help-section">
+          <h3>モード説明</h3>
+          <p><strong>SOLO</strong>: CPUと対戦します。難易度とCPUキャラ選択方法を決めてから開始します。</p>
+          <p><strong>ONLINE</strong>: ルームIDを使って対戦します。同じROOM IDを入力した相手と合流します。</p>
+        </section>
+
+        <section class="help-section">
+          <h3>勝利条件</h3>
+          <p>各ラウンドで相手のHPを0にするか、時間切れ時にHPが多い側がラウンド勝利です。先に3勝するとその場で勝利表示が出て試合終了です。</p>
+        </section>
+
+        <section class="help-section">
+          <h3>ランキング</h3>
+          <p>タイトル画面またはリザルト画面の <strong>RANKING</strong> から確認できます。5キャラの使用回数、勝利数、敗北数、勝率を表示します。</p>
+        </section>
+
+        <section class="help-section">
+          <h3>オンラインの流れ</h3>
+          <p>1. ONLINE を押す<br>2. 接続する<br>3. ROOM ID を入力して合流する<br>4. キャラ選択後、両者の準備が揃うと開始します。</p>
+        </section>
+      </div>
+      <button class="modal-close" onclick="closeHelpModal()">CLOSE</button>
+    </div>
+  </div>
+
   <div id="ctrl">
     <span class="c1">P1: <kbd>A</kbd><kbd>D</kbd>移動 <kbd>W</kbd>ジャンプ <kbd>F</kbd>弱 <kbd>G</kbd>強 <kbd>H</kbd>ガード <kbd>R</kbd>波動拳 <kbd>T</kbd>昇龍拳 <kbd>F+G</kbd>CA</span>
     <span class="c2">SOLOはCPU対戦 / ONLINEは接続後に同じROOM IDで合流</span>
@@ -163,6 +196,7 @@
 <script src="js/collision.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/ranking.js"></script>
+<script src="js/help.js"></script>
 <script src="js/charselect.js"></script>
 <script src="js/game.js"></script>
 <script src="js/online.js"></script>
