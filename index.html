@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <title>IRON FIST X</title>
 <link rel="stylesheet" href="css/style.css">
+
+<script>
+  window.SUPABASE_URL = 'https://aladxmqxvxlaizqstpea.supabase.co';
+  window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsYWR4bXF4dnhsYWl6cXN0cGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODg3NjUsImV4cCI6MjA4ODk2NDc2NX0.YGBPtfTs4-3A8sEdF43WmbYTpwpQdND6aHZ8qSon4LU';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div id="wrap">
@@ -121,6 +127,7 @@
     <div class="rstats" id="rst"></div>
     <div class="rbtns">
       <button class="rbtn" onclick="rematch()">▶ REMATCH</button>
+      <button class="rbtn s" onclick="openRankingModal()">RANKING</button>
       <button class="rbtn s" onclick="goTitle()">TITLE</button>
     </div>
   </div>
