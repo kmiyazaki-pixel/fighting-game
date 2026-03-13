@@ -102,13 +102,16 @@ function endRound(isTimeout = false) {
   updateAllPips(f1, f2);
 
   setTimeout(() => {
-    if (f1.wins >= GAME.ROUNDS_TO_WIN || f2.wins >= GAME.ROUNDS_TO_WIN) {
+    const targetWins = 3;
+
+    if (f1.wins >= targetWins || f2.wins >= targetWins) {
       setTimeout(() => _showResult(winner), 900);
-    } else {
-      round++;
-      updateRoundLabel(round);
-      setTimeout(() => nextRound(), 2400);
+      return;
     }
+
+    round++;
+    updateRoundLabel(round);
+    setTimeout(() => nextRound(), 2400);
   }, 2000);
 }
 
