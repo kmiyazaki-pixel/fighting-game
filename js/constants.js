@@ -8,15 +8,15 @@
 // ── ゲーム基本設定 ───────────────────────────
 const GAME = {
   W: 900, H: 506,
-  FLOOR_Y: Math.floor(506 * 0.78),  // = 394
+  FLOOR_Y: Math.floor(506 * 0.78),
   GRAV: 0.64,
   MAX_HP: 220,
   MAX_EX: 100,
   MAX_CA: 100,
-  FW: 80,   // ファイター当たり判定 幅
-  FH: 112,  // ファイター当たり判定 高さ
+  FW: 80,
+  FH: 112,
   ROUND_TIME: 99,
-  ROUNDS_TO_WIN: 2,
+  ROUNDS_TO_WIN: 3,
 };
 
 // ── 通常技フレームデータ ─────────────────────
