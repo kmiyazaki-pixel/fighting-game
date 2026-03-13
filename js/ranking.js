@@ -1,143 +1,169 @@
-// ═══════════════════════════════════════════
-//  ranking.js
-//  ランキングシステム
-//  window.storage が使える環境ではそれを使い、
-//  使えない通常ブラウザでは localStorage に保存する
-// ═══════════════════════════════════════════
 'use strict';
 
-const RANKING_KEY   = 'ironfist:ranking';
-const RANKING_LIMIT = 20;   // 保存するスコア数の上限
+const SUPABASE_URL = window.SUPABASE_URL;
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY;
 
-const rankingStore = {
-  async get(key) {
-    if (typeof window.storage !== 'undefined' && window.storage?.get) {
-      const res = await window.storage.get(key, true);
-      return res ? res.value : null;
+const sb =
+  window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+function getCharacterName(charId) {
+  return CHARACTERS.find(c => c.id === charId)?.name || charId;
+}
+
+function escapeHtml(text = '') {
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+async function saveMatchResult({ winner, f1, f2 }) {
+  if (!sb || !winner || !f1 || !f2) return;
+
+  if (battleMode === 'online' && window.netState?.playerId !== 'p1') return;
+
+  const matchId = crypto.randomUUID();
+
+  const rows = [
+    {
+      match_id: matchId,
+      battle_mode: battleMode || 'solo',
+      player_slot: 'p1',
+      character_id: f1.charDef.id,
+      is_win: winner === 'p1'
+    },
+    {
+      match_id: matchId,
+      battle_mode: battleMode || 'solo',
+      player_slot: 'p2',
+      character_id: f2.charDef.id,
+      is_win: winner === 'p2'
     }
-    try {
-      return localStorage.getItem(key);
-    } catch (e) {
-      return null;
-    }
-  },
+  ];
 
-  async set(key, value) {
-    if (typeof window.storage !== 'undefined' && window.storage?.set) {
-      await window.storage.set(key, value, true);
-      return;
-    }
-    try {
-      localStorage.setItem(key, value);
-    } catch (e) {}
-  }
-};
+  const { error } = await sb.from('battle_results').insert(rows);
 
-// ── スコアデータ構造 ─────────────────────────
-// {
-//   name:     string   プレイヤー名
-//   charId:   string   使用キャラID
-//   maxCombo: number   最高コンボ数
-//   totalDmg: number   総ダメージ
-//   wins:     number   勝利数
-//   date:     string   ISO日時
-// }
-
-// ── 読み込み ─────────────────────────────────
-async function loadRanking() {
-  try {
-    const raw = await rankingStore.get(RANKING_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    return [];
+  if (error) {
+    console.error('saveMatchResult error:', error);
   }
 }
 
-// ── 保存（スコア追加） ────────────────────────
-async function saveScore(entry) {
-  let scores = await loadRanking();
-  scores.push({ ...entry, date: new Date().toISOString() });
+async function loadCharacterRanking() {
+  const base = CHARACTERS.map(ch => ({
+    character_id: ch.id,
+    character_name: ch.name,
+    use_count: 0,
+    win_count: 0,
+    lose_count: 0,
+    win_rate: 0
+  }));
 
-  // 最高コンボ数→総ダメージ→日時の順でソート
-  scores.sort((a, b) => b.maxCombo - a.maxCombo || b.totalDmg - a.totalDmg);
-  scores = scores.slice(0, RANKING_LIMIT);
+  if (!sb) return base;
 
-  try {
-    await rankingStore.set(RANKING_KEY, JSON.stringify(scores));
-  } catch (e) {}
+  const { data, error } = await sb
+    .from('battle_results')
+    .select('character_id, is_win');
 
-  return scores;
-}
+  if (error) throw error;
 
-// ── ランキング画面の HTML を生成 ───────────────
-function buildRankingHTML(scores) {
-  if (!scores.length) {
-    return '<div style="color:#555;text-align:center;padding:20px">まだスコアがありません</div>';
+  const stats = new Map(base.map(row => [row.character_id, row]));
+
+  for (const row of data || []) {
+    const item = stats.get(row.character_id);
+    if (!item) continue;
+
+    item.use_count += 1;
+    if (row.is_win) {
+      item.win_count += 1;
+    } else {
+      item.lose_count += 1;
+    }
   }
 
-  const rows = scores.map((s, i) => {
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-    const char  = CHARACTERS.find(c => c.id === s.charId);
-    const cname = char ? char.name : s.charId;
-    const date  = new Date(s.date).toLocaleDateString('ja-JP');
+  return [...stats.values()]
+    .map(item => ({
+      ...item,
+      win_rate: item.use_count
+        ? Number(((item.win_count / item.use_count) * 100).toFixed(1))
+        : 0
+    }))
+    .sort((a, b) =>
+      b.use_count - a.use_count ||
+      b.win_rate - a.win_rate ||
+      a.character_name.localeCompare(b.character_name)
+    );
+}
+
+function buildRankingHTML(ranking) {
+  const rows = ranking.slice(0, 5).map((r, i) => {
+    const medal =
+      i === 0 ? '🥇' :
+      i === 1 ? '🥈' :
+      i === 2 ? '🥉' :
+      `${i + 1}.`;
 
     return `
       <tr class="${i < 3 ? 'top' : ''}">
         <td class="rank">${medal}</td>
-        <td class="pname-r">${s.name || '???'}</td>
-        <td class="char-r">${cname}</td>
-        <td class="combo">${s.maxCombo}</td>
-        <td class="dmg">${s.totalDmg}</td>
-        <td class="wins-r">${s.wins}W</td>
-        <td class="date-r">${date}</td>
-      </tr>`;
+        <td class="char-r">${escapeHtml(r.character_name)}</td>
+        <td class="combo">${r.use_count}</td>
+        <td class="wins-r">${r.win_count}</td>
+        <td class="dmg">${r.lose_count}</td>
+        <td class="date-r">${r.win_rate}%</td>
+      </tr>
+    `;
   }).join('');
 
   return `
     <table class="rank-table">
       <thead>
         <tr>
-          <th>#</th><th>NAME</th><th>CHAR</th>
-          <th>MAX COMBO</th><th>DAMAGE</th><th>WINS</th><th>DATE</th>
+          <th>#</th>
+          <th>CHARACTER</th>
+          <th>USE</th>
+          <th>WIN</th>
+          <th>LOSE</th>
+          <th>WIN RATE</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
-    </table>`;
+    </table>
+  `;
 }
 
-// ── ランキングモーダルを開く ────────────────
 async function openRankingModal() {
   const modal = document.getElementById('ranking-modal');
-  const body  = document.getElementById('ranking-body');
+  const body = document.getElementById('ranking-body');
+  const title = document.querySelector('#ranking-modal .modal-title');
 
-  body.innerHTML = '<div style="color:#888;text-align:center;padding:30px">読み込み中...</div>';
+  if (title) title.textContent = '🏆 CHARACTER RANKING';
+
   modal.style.display = 'flex';
+  body.innerHTML = '<div style="color:#888;text-align:center;padding:30px">読み込み中...</div>';
 
-  const scores = await loadRanking();
-  body.innerHTML = buildRankingHTML(scores);
+  if (!sb) {
+    body.innerHTML = '<div style="color:#f66;text-align:center;padding:30px">Supabase設定がありません</div>';
+    return;
+  }
+
+  try {
+    const ranking = await loadCharacterRanking();
+    body.innerHTML = buildRankingHTML(ranking);
+  } catch (e) {
+    console.error(e);
+    body.innerHTML = '<div style="color:#f66;text-align:center;padding:30px">ランキング取得に失敗しました</div>';
+  }
 }
 
 function closeRankingModal() {
   document.getElementById('ranking-modal').style.display = 'none';
 }
 
-// ── スコア入力モーダルを開く ─────────────────
-function openScoreModal(charId, maxCombo, totalDmg, wins, onSave) {
+function openScoreModal() {
   const modal = document.getElementById('score-modal');
-  const input = document.getElementById('score-name-input');
-
-  input.value = '';
-  modal.style.display = 'flex';
-
-  document.getElementById('score-save-btn').onclick = async () => {
-    const name = input.value.trim() || 'FIGHTER';
-    modal.style.display = 'none';
-    await saveScore({ name, charId, maxCombo, totalDmg, wins });
-    openRankingModal();
-  };
-
-  document.getElementById('score-skip-btn').onclick = () => {
-    modal.style.display = 'none';
-    if (onSave) onSave(false);
-  };
+  if (modal) modal.style.display = 'none';
 }
