@@ -102,22 +102,26 @@ function endRound(isTimeout = false) {
   updateAllPips(f1, f2);
 
   setTimeout(() => {
-    if (f1.wins >= 3 || f2.wins >= 3) {
-      _showResult(winner);
-      return;
+    if (f1.wins >= GAME.ROUNDS_TO_WIN || f2.wins >= GAME.ROUNDS_TO_WIN) {
+      setTimeout(() => _showResult(winner), 900);
+    } else {
+      round++;
+      updateRoundLabel(round);
+      setTimeout(() => nextRound(), 2400);
     }
-
-    round++;
-    updateRoundLabel(round);
-    nextRound();
   }, 2000);
 }
 
 function nextRound() {
   const ch1 = f1.charDef;
   const ch2 = f2.charDef;
+  const prevWins1 = f1.wins;
+  const prevWins2 = f2.wins;
 
   initFighters(ch1, ch2);
+  f1.wins = prevWins1;
+  f2.wins = prevWins2;
+  updateAllPips(f1, f2);
 
   [f1, f2].forEach(f => {
     updateHP(f.pid, GAME.MAX_HP, GAME.MAX_HP);
@@ -137,8 +141,14 @@ function nextRound() {
 function _showResult(winner) {
   showResultScreen(winner, f1, f2);
 
-  if (winner) {
+  if (winner && typeof saveMatchResult === 'function') {
     saveMatchResult({ winner, f1, f2 });
+    return;
+  }
+
+  const wf = winner === 'p1' ? f1 : f2;
+  if (winner && typeof openScoreModal === 'function') {
+    openScoreModal(wf.charDef.id, wf.maxCombo, wf.dmg, wf.wins, null);
   }
 }
 
