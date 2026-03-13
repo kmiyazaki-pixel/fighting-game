@@ -136,9 +136,8 @@ function nextRound() {
 function _showResult(winner) {
   showResultScreen(winner, f1, f2);
 
-  const wf = winner === 'p1' ? f1 : f2;
   if (winner) {
-    openScoreModal(wf.charDef.id, wf.maxCombo, wf.dmg, wf.wins, null);
+    saveMatchResult({ winner, f1, f2 });
   }
 }
 
