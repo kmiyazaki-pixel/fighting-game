@@ -50,17 +50,26 @@ function buildP2Pips() {
   const mid  = document.querySelector('.mid');
   const row2 = document.createElement('div');
   row2.className = 'pips'; row2.style.marginTop='2px';
-  row2.innerHTML  = '<div class="pip" id="pp2a"></div><div class="pip" id="pp2b"></div>';
+  row2.innerHTML  = '<div class="pip" id="pp2a"></div><div class="pip" id="pp2b"></div><div class="pip" id="pp2c"></div>';
+  const row1 = document.querySelector('.mid .pips');
+  if (row1 && !document.getElementById('pp1c')) {
+    row1.insertAdjacentHTML('beforeend', '<div class="pip" id="pp1c"></div>');
+  }
   mid.appendChild(row2);
 }
 
 function updateAllPips(f1, f2) {
   document.getElementById('pp1a').className = 'pip'+(f1.wins>=1?' on':'');
   document.getElementById('pp1b').className = 'pip'+(f1.wins>=2?' on':'');
+  const pp1c = document.getElementById('pp1c');
+  if (pp1c) pp1c.className = 'pip'+(f1.wins>=3?' on':'');
+
   const pp2a = document.getElementById('pp2a');
   if (pp2a) {
     pp2a.className = 'pip'+(f2.wins>=1?' on':'');
     document.getElementById('pp2b').className = 'pip'+(f2.wins>=2?' on':'');
+    const pp2c = document.getElementById('pp2c');
+    if (pp2c) pp2c.className = 'pip'+(f2.wins>=3?' on':'');
   }
 }
 
