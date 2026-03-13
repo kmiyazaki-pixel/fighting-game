@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>IRON FIST X</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="gc" width="900" height="506"></canvas>
+  <canvas id="fc" width="900" height="506"></canvas>
+
+  <div id="hud">
+    <div class="side" id="s1">
+      <div class="pname">RYU-X <span class="badge">MASTER</span></div>
+      <div class="hp-outer">
+        <div class="hp-drain" id="d1" style="width:100%"></div>
+        <div class="hp-bar" id="h1" style="width:100%"></div>
+      </div>
+      <div class="ex-outer"><div class="ex-bar" id="ex1" style="width:0"></div></div>
+      <div class="ca-outer"><div class="ca-bar" id="ca1" style="width:0"></div></div>
+    </div>
+
+    <div class="mid">
+      <div class="rlbl" id="rlbl">ROUND 1</div>
+      <div id="timer">99</div>
+      <div class="pips">
+        <div class="pip" id="pp1a"></div>
+        <div class="pip" id="pp1b"></div>
+      </div>
+    </div>
+
+    <div class="side r" id="s2">
+      <div class="pname"><span class="badge">DIAMOND</span> KAI-Z</div>
+      <div class="hp-outer">
+        <div class="hp-drain" id="d2" style="width:100%"></div>
+        <div class="hp-bar" id="h2" style="width:100%"></div>
+      </div>
+      <div class="ex-outer"><div class="ex-bar" id="ex2" style="width:0"></div></div>
+      <div class="ca-outer"><div class="ca-bar" id="ca2" style="width:0"></div></div>
+    </div>
+  </div>
+
+  <div id="ann"><div class="ann-t" id="at"></div></div>
+  <div id="flash"></div>
+
+  <div id="title">
+    <div class="tlogo">IRON FIST X</div>
+    <div class="tsub">NEO ARCADE BATTLE SYSTEM</div>
+
+    <div class="title-btns">
+      <button class="tbtn" onclick="goSoloMenu()">▶ SOLO</button>
+      <button class="tbtn" onclick="goOnlineMenu()">🌐 ONLINE</button>
+      <button class="tbtn outline" onclick="openRankingModal()">🏆 RANKING</button>
+    </div>
+
+    <div class="thint">
+      <em>P1: [A][D] 移動　[W] ジャンプ　[F] 弱攻撃　[G] 強攻撃　[H] ガード　[R] 波動拳　[T] 昇龍拳　[F+G] CA必殺</em><br>
+      <em>P2: CPU / ONLINE 対戦対応</em>
+    </div>
+  </div>
+
+  <div id="solo-menu">
+    <div class="om-card">
+      <div class="om-title">SOLO MODE</div>
+      <div class="om-desc">CPU難易度を選択してください</div>
+
+      <div class="om-row">
+        <button class="tbtn" onclick="setSoloDifficulty('easy')">EASY</button>
+        <button class="tbtn" onclick="setSoloDifficulty('normal')">NORMAL</button>
+        <button class="tbtn" onclick="setSoloDifficulty('hard')">HARD</button>
+      </div>
+
+      <div class="om-room" id="solo-difficulty-view">現在: NORMAL</div>
+      <div class="om-room" id="cpu-select-mode-view">CPUキャラ: RANDOM</div>
+
+      <div class="om-row">
+        <button class="tbtn" onclick="setCpuSelectMode('random')">CPU RANDOM</button>
+        <button class="tbtn" onclick="setCpuSelectMode('select')">CPU SELECT</button>
+      </div>
+
+      <div class="om-row">
+        <button class="tbtn" onclick="goCharSelectSolo()">キャラ選択へ</button>
+      </div>
+
+      <div class="om-row">
+        <button class="tbtn outline" onclick="goTitle()">もどる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="online-menu">
+    <div class="om-card">
+      <div class="om-title">ONLINE BATTLE</div>
+      <div id="online-status">未接続</div>
+      <div class="om-room">ROOM: <span id="room-id-view">-</span></div>
+      <div id="room-members">参加中: -</div>
+      <div id="room-ready-state">P1 ready:N / P2 ready:N / P1 char:- / P2 char:-</div>
+
+      <div class="om-row">
+        <button class="tbtn" onclick="connectOnline('wss://fighting-game-vbfg.onrender.com')">接続</button>
+      </div>
+
+      <div class="om-row">
+        <input id="room-id-input" placeholder="ROOM ID">
+        <button class="tbtn" onclick="joinRoomAndGoCharSelect()">同じIDで入る</button>
+      </div>
+
+      <div class="om-row">
+        <button class="tbtn outline" onclick="goTitle()">もどる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="charselect"></div>
+
+  <div id="result">
+    <div class="rko" id="rko">K.O.!</div>
+    <div class="rwin" id="rwin">PLAYER 1 WINS!</div>
+    <div class="rstats" id="rst"></div>
+    <div class="rbtns">
+      <button class="rbtn" onclick="rematch()">▶ REMATCH</button>
+      <button class="rbtn s" onclick="goTitle()">TITLE</button>
+    </div>
+  </div>
+
+  <div id="ranking-modal">
+    <div class="modal-title">🏆 RANKING</div>
+    <div id="ranking-body"></div>
+    <button class="modal-close" onclick="closeRankingModal()">CLOSE</button>
+  </div>
+
+  <div id="score-modal">
+    <div class="score-modal-title">ENTER YOUR NAME</div>
+    <div class="score-modal-sub">スコアをランキングに登録します</div>
+    <input id="score-name-input" type="text" maxlength="12" placeholder="FIGHTER">
+    <div class="score-btns">
+      <button id="score-save-btn">REGISTER</button>
+      <button id="score-skip-btn">SKIP</button>
+    </div>
+  </div>
+
+  <div id="ctrl">
+    <span class="c1">P1: <kbd>A</kbd><kbd>D</kbd>移動 <kbd>W</kbd>ジャンプ <kbd>F</kbd>弱 <kbd>G</kbd>強 <kbd>H</kbd>ガード <kbd>R</kbd>波動拳 <kbd>T</kbd>昇龍拳 <kbd>F+G</kbd>CA</span>
+    <span class="c2">SOLOはCPU対戦 / ONLINEは接続後に同じROOM IDで合流</span>
+  </div>
+</div>
+
+<script src="js/constants.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/background.js"></script>
+<script src="js/fighter.js"></script>
+<script src="js/input.js"></script>
+<script src="js/collision.js"></script>
+<script src="js/hud.js"></script>
+<script src="js/ranking.js"></script>
+<script src="js/charselect.js"></script>
+<script src="js/game.js"></script>
+<script src="js/online.js"></script>
+</body>
+</html>
